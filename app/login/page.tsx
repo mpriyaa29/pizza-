@@ -40,8 +40,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Mock customer login
-      if (email && password === "pizza123") {
+      // Mock customer login - Allow ANY password for sign-in
+      if (email && password) {
         login("customer", email);
         
         // Send welcome email
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
         router.push("/");
       } else {
-        setError("Invalid customer credentials. (Use 'pizza123' for test)");
+        setError("Please enter both email and password.");
       }
     }
     setIsLoading(false);
