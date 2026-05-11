@@ -25,6 +25,7 @@ export default function Nav() {
             { label: "MENU", id: "menu" },
             { label: "STORY", id: "prologue" },
             { label: "LOCAL", id: "features" },
+            { label: "BOOK", id: "booking" },
           ].map((l) => (
             <a
               key={l.id}

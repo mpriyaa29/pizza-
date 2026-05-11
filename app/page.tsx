@@ -14,6 +14,7 @@ import RevealController from "@/components/RevealController";
 import CheckoutModal from "@/components/CheckoutModal";
 import FullMenuModal from "@/components/FullMenuModal";
 import AdminOrdersList from "@/components/AdminOrdersList";
+import LocationBooking from "@/components/LocationBooking";
 
 export default function Home() {
   return (
@@ -35,6 +36,7 @@ export default function Home() {
         <Stats />
         <Quote />
         <Features />
+        <LocationBooking />
         <CTA />
         <AdminOrdersList />
       </main>
