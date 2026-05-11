@@ -33,9 +33,28 @@ export default function LoginPage() {
         setError("Connection error. Please try again.");
       }
     } else {
+      // Validate email contains @
+      if (!email.includes("@")) {
+        setError("Please enter a valid email address containing '@'.");
+        setIsLoading(false);
+        return;
+      }
+
       // Mock customer login
       if (email && password === "pizza123") {
         login("customer", email);
+        
+        // Send welcome email
+        try {
+          await fetch("/api/auth/welcome", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+        } catch (err) {
+          console.error("Failed to send welcome email:", err);
+        }
+
         router.push("/");
       } else {
         setError("Invalid customer credentials. (Use 'pizza123' for test)");
