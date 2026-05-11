@@ -112,10 +112,16 @@ export default function Hero() {
       const ww = window.innerWidth;
       const wh = window.innerHeight;
 
-      // Canvas idle bob
+      // Canvas layered animation driven by p
       if (wrapRef.current) {
+        // Subtle idle bob
         const bob = Math.sin(t * 1.1) * 5;
-        wrapRef.current.style.transform = `translateY(${bob}px) scale(${1 + p * 0.08})`;
+        
+        // Layered entrance: Starts lower and smaller, settles quickly (first 20% of scroll)
+        const entranceY = p < 0.2 ? lerp(40, 0, p / 0.2) : 0;
+        const scale = 1 + p * 0.12; // Grow slightly as we scroll deeper
+        
+        wrapRef.current.style.transform = `translateY(${entranceY + bob}px) scale(${scale})`;
       }
 
       // Cursor parallax on stage
@@ -126,31 +132,39 @@ export default function Hero() {
         curRotRef.current.rx = lerp(curRotRef.current.rx, targetRx, 0.08);
         curRotRef.current.ry = lerp(curRotRef.current.ry, targetRy, 0.08);
         curRotRef.current.tx = lerp(curRotRef.current.tx, targetTx, 0.08);
+        
+        // Stage follows p for a "rising" effect
+        const stageY = p < 0.2 ? lerp(20, 0, p / 0.2) : 0;
+        
         stageRef.current.style.transform =
-          `perspective(1200px) rotateX(${curRotRef.current.rx}deg) rotateY(${curRotRef.current.ry}deg) translateX(${curRotRef.current.tx}px)`;
+          `perspective(1200px) translateY(${stageY}px) rotateX(${curRotRef.current.rx}deg) rotateY(${curRotRef.current.ry}deg) translateX(${curRotRef.current.tx}px)`;
       }
 
-      // Spotlight
+      // Spotlight follows mouse but responds to p
       if (spotRef.current) {
+        const sO = p < 0.1 ? p / 0.1 : 1;
         spotRef.current.style.transform = `translate3d(${mx - 150}px, ${my - 150}px, 0)`;
+        spotRef.current.style.opacity = String(0.3 * sO);
       }
 
-      // Halo bloom
+      // Halo bloom response
       if (haloRef.current) {
-        const s = 1 + Math.sin(t * 0.7) * 0.04;
+        const s = (1 + Math.sin(t * 0.7) * 0.04) * (0.8 + p * 0.4);
         haloRef.current.style.transform = `scale(${s})`;
       }
 
-      // Shadow
+      // Shadow response to height/bob
       if (shadowRef.current) {
         const bob = Math.sin(t * 1.1) * 5;
         const sy = 1 - (bob + 5) / 20;
-        shadowRef.current.style.transform = `scaleY(${0.6 + sy * 0.4})`;
+        const sO = p < 0.2 ? p / 0.2 : 1;
+        shadowRef.current.style.transform = `scaleY(${0.6 + sy * 0.4}) scaleX(${0.9 + p * 0.2})`;
+        shadowRef.current.style.opacity = String(0.4 * sO);
       }
 
       // Ambient orbs parallax
-      if (orbRedRef.current) orbRedRef.current.style.transform = `translateY(${p * -80}px)`;
-      if (orbGoldRef.current) orbGoldRef.current.style.transform = `translateY(${p * 60}px)`;
+      if (orbRedRef.current) orbRedRef.current.style.transform = `translateY(${p * -120}px)`;
+      if (orbGoldRef.current) orbGoldRef.current.style.transform = `translateY(${p * 90}px)`;
 
       // Text overlays driven by p
       if (eyebrowRef.current) {
@@ -225,7 +239,7 @@ export default function Hero() {
         </div>
 
         {/* Canvas stage */}
-        <div ref={stageRef} className="entrance-canvas relative flex-1 flex items-center justify-center" style={{ perspective: "1200px" }}>
+        <div ref={stageRef} className="relative flex-1 flex items-center justify-center" style={{ perspective: "1200px" }}>
           {/* Halo */}
           <div ref={haloRef} className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[70%] h-[70%] rounded-full bg-red/5 blur-[80px]" />
