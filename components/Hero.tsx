@@ -112,45 +112,38 @@ export default function Hero() {
       const ww = window.innerWidth;
       const wh = window.innerHeight;
 
-      // Canvas layered animation driven by p
+      // Canvas direct mapping driven by p
       if (wrapRef.current) {
-        // Subtle idle bob
-        const bob = Math.sin(t * 1.1) * 5;
-        
-        // Layered entrance: Starts lower and smaller, settles quickly (first 20% of scroll)
-        const entranceY = p < 0.2 ? lerp(40, 0, p / 0.2) : 0;
-        const scale = 1 + p * 0.12; // Grow slightly as we scroll deeper
-        
-        wrapRef.current.style.transform = `translateY(${entranceY + bob}px) scale(${scale})`;
+        // No bob, just direct scroll mapping for a "single scroll" feel
+        const scale = 0.85 + p * 0.35; // Significant grow
+        wrapRef.current.style.transform = `scale(${scale})`;
       }
 
       // Cursor parallax on stage
       if (stageRef.current) {
-        const targetRx = ((my / wh) - 0.5) * 10;
-        const targetRy = ((mx / ww) - 0.5) * 12;
-        const targetTx = ((mx / ww) - 0.5) * 20;
-        curRotRef.current.rx = lerp(curRotRef.current.rx, targetRx, 0.08);
-        curRotRef.current.ry = lerp(curRotRef.current.ry, targetRy, 0.08);
-        curRotRef.current.tx = lerp(curRotRef.current.tx, targetTx, 0.08);
-        
-        // Stage follows p for a "rising" effect
-        const stageY = p < 0.2 ? lerp(20, 0, p / 0.2) : 0;
+        const targetRx = ((my / wh) - 0.5) * 15;
+        const targetRy = ((mx / ww) - 0.5) * 18;
+        const targetTx = ((mx / ww) - 0.5) * 30;
+        curRotRef.current.rx = lerp(curRotRef.current.rx, targetRx, 0.1);
+        curRotRef.current.ry = lerp(curRotRef.current.ry, targetRy, 0.1);
+        curRotRef.current.tx = lerp(curRotRef.current.tx, targetTx, 0.1);
         
         stageRef.current.style.transform =
-          `perspective(1200px) translateY(${stageY}px) rotateX(${curRotRef.current.rx}deg) rotateY(${curRotRef.current.ry}deg) translateX(${curRotRef.current.tx}px)`;
+          `perspective(1200px) rotateX(${curRotRef.current.rx}deg) rotateY(${curRotRef.current.ry}deg) translateX(${curRotRef.current.tx}px)`;
       }
 
-      // Spotlight follows mouse but responds to p
+      // Spotlight intensity driven by scroll
       if (spotRef.current) {
-        const sO = p < 0.1 ? p / 0.1 : 1;
+        const opacity = 0.2 + p * 0.4;
         spotRef.current.style.transform = `translate3d(${mx - 150}px, ${my - 150}px, 0)`;
-        spotRef.current.style.opacity = String(0.3 * sO);
+        spotRef.current.style.opacity = String(opacity);
       }
 
-      // Halo bloom response
+      // Halo bloom response - layered speed
       if (haloRef.current) {
-        const s = (1 + Math.sin(t * 0.7) * 0.04) * (0.8 + p * 0.4);
+        const s = 0.7 + p * 0.8;
         haloRef.current.style.transform = `scale(${s})`;
+        haloRef.current.style.opacity = String(0.4 + p * 0.6);
       }
 
       // Shadow response to height/bob
@@ -207,7 +200,7 @@ export default function Hero() {
   }, [ready, drawFrame]);
 
   return (
-    <section id="hero" ref={sectionRef} className="hero relative h-[500vh]">
+    <section id="hero" ref={sectionRef} className="hero relative h-[250vh]">
       <div className="sticky top-0 flex h-screen w-full flex-col overflow-hidden bg-black pt-16">
         {/* Loading veil */}
         {!ready && (
