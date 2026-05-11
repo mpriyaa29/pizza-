@@ -83,7 +83,7 @@ export default function Hero() {
 
   // Draw first frame when ready
   useEffect(() => {
-    if (ready) drawFrame(0);
+    if (ready) drawFrame(95);
   }, [ready, drawFrame]);
 
   // Scroll handler + rAF loop
@@ -99,14 +99,16 @@ export default function Hero() {
         const rect = sec.getBoundingClientRect();
         const winH = winHeightRef.current || window.innerHeight;
         
-        // Stable progress calculation - avoids mobile address bar jumps
+        // Stable progress calculation
         const totalScrollable = sec.offsetHeight - winH;
         const p = clamp01(-rect.top / totalScrollable);
         
         pRef.current = p;
         
-        // Smooth frame interpolation for touch
-        const targetIdx = Math.round(p * (TOTAL_FRAMES - 1));
+        // Skip the "descent" (first 100 frames) and start directly with layering
+        const START_FRAME = 95; // Tune this to where the layering exactly starts
+        const targetIdx = Math.round(START_FRAME + p * (TOTAL_FRAMES - 1 - START_FRAME));
+        
         if (targetIdx !== frameRef.current) {
           frameRef.current = targetIdx;
           drawFrame(targetIdx);
@@ -128,14 +130,11 @@ export default function Hero() {
       const ww = window.innerWidth;
       const wh = window.innerHeight;
 
-      // Canvas direct mapping + Stabilization
+      // Canvas direct mapping
       if (wrapRef.current) {
-        // Stabilization: If the frames have vertical movement, we counter it here.
-        // We'll apply a subtle counter-curve to keep the pizza "locked" in center.
-        const stabilizer = p < 0.4 ? lerp(0, -30, p / 0.4) : lerp(-30, 0, (p - 0.4) / 0.6);
-        
-        const scale = 0.9 + p * 0.3; 
-        wrapRef.current.style.transform = `translateY(${stabilizer}px) scale(${scale})`;
+        // Now that we skip the descent, we just need a smooth scale
+        const scale = 1.02 + p * 0.15; 
+        wrapRef.current.style.transform = `scale(${scale})`;
       }
 
       // Cursor parallax on stage
