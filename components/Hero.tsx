@@ -27,10 +27,19 @@ export default function Hero() {
   const imgsRef = useRef<HTMLImageElement[]>([]);
   const frameRef = useRef(0);
   const pRef = useRef(0);
+  const winHeightRef = useRef(0);
   const mouseRef = useRef({ x: 0, y: 0 });
   const curRotRef = useRef({ rx: 0, ry: 0, tx: 0 });
   const rafRef = useRef(0);
   const tickRef = useRef(false);
+
+  // Cache window height to avoid mobile address bar jumps
+  useEffect(() => {
+    winHeightRef.current = window.innerHeight;
+    const handleResize = () => { winHeightRef.current = window.innerHeight; };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const drawFrame = useCallback((idx: number) => {
     const canvas = canvasRef.current;
@@ -88,12 +97,19 @@ export default function Hero() {
         const sec = sectionRef.current;
         if (!sec) { tickRef.current = false; return; }
         const rect = sec.getBoundingClientRect();
-        const p = clamp01(-rect.top / (sec.offsetHeight - window.innerHeight));
+        const winH = winHeightRef.current || window.innerHeight;
+        
+        // Stable progress calculation - avoids mobile address bar jumps
+        const totalScrollable = sec.offsetHeight - winH;
+        const p = clamp01(-rect.top / totalScrollable);
+        
         pRef.current = p;
-        const idx = Math.round(p * (TOTAL_FRAMES - 1));
-        if (idx !== frameRef.current) {
-          frameRef.current = idx;
-          drawFrame(idx);
+        
+        // Smooth frame interpolation for touch
+        const targetIdx = Math.round(p * (TOTAL_FRAMES - 1));
+        if (targetIdx !== frameRef.current) {
+          frameRef.current = targetIdx;
+          drawFrame(targetIdx);
         }
         tickRef.current = false;
       });
