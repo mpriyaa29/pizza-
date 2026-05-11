@@ -128,18 +128,21 @@ export default function Hero() {
       const ww = window.innerWidth;
       const wh = window.innerHeight;
 
-      // Canvas direct mapping driven by p
+      // Canvas direct mapping + Stabilization
       if (wrapRef.current) {
-        // No bob, just direct scroll mapping for a "single scroll" feel
-        const scale = 0.85 + p * 0.35; // Significant grow
-        wrapRef.current.style.transform = `scale(${scale})`;
+        // Stabilization: If the frames have vertical movement, we counter it here.
+        // We'll apply a subtle counter-curve to keep the pizza "locked" in center.
+        const stabilizer = p < 0.4 ? lerp(0, -30, p / 0.4) : lerp(-30, 0, (p - 0.4) / 0.6);
+        
+        const scale = 0.9 + p * 0.3; 
+        wrapRef.current.style.transform = `translateY(${stabilizer}px) scale(${scale})`;
       }
 
       // Cursor parallax on stage
       if (stageRef.current) {
-        const targetRx = ((my / wh) - 0.5) * 15;
-        const targetRy = ((mx / ww) - 0.5) * 18;
-        const targetTx = ((mx / ww) - 0.5) * 30;
+        const targetRx = ((my / wh) - 0.5) * 12;
+        const targetRy = ((mx / ww) - 0.5) * 15;
+        const targetTx = ((mx / ww) - 0.5) * 20;
         curRotRef.current.rx = lerp(curRotRef.current.rx, targetRx, 0.1);
         curRotRef.current.ry = lerp(curRotRef.current.ry, targetRy, 0.1);
         curRotRef.current.tx = lerp(curRotRef.current.tx, targetTx, 0.1);
@@ -148,18 +151,14 @@ export default function Hero() {
           `perspective(1200px) rotateX(${curRotRef.current.rx}deg) rotateY(${curRotRef.current.ry}deg) translateX(${curRotRef.current.tx}px)`;
       }
 
-      // Spotlight intensity driven by scroll
+      // Spotlight and Halo - Fast response for layered feel
       if (spotRef.current) {
-        const opacity = 0.2 + p * 0.4;
         spotRef.current.style.transform = `translate3d(${mx - 150}px, ${my - 150}px, 0)`;
-        spotRef.current.style.opacity = String(opacity);
+        spotRef.current.style.opacity = String(0.2 + p * 0.5);
       }
-
-      // Halo bloom response - layered speed
       if (haloRef.current) {
-        const s = 0.7 + p * 0.8;
-        haloRef.current.style.transform = `scale(${s})`;
-        haloRef.current.style.opacity = String(0.4 + p * 0.6);
+        haloRef.current.style.transform = `scale(${0.8 + p * 1.2})`;
+        haloRef.current.style.opacity = String(0.3 + p * 0.7);
       }
 
       // Shadow response to height/bob
